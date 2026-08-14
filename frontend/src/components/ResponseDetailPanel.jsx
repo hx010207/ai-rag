@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Layers, ShieldCheck, AlertTriangle, ShieldAlert, Volume2, Database, Zap, Cpu } from 'lucide-react';
+import { Layers, ShieldCheck, AlertTriangle, ShieldAlert, Volume2, Database, Zap, Sparkles } from 'lucide-react';
 import LatencyHUD from './LatencyHUD';
+import PalmLeafDecoration from './decorative/PalmLeafDecoration';
 
 export default function ResponseDetailPanel({ selectedMessage }) {
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
@@ -8,10 +9,13 @@ export default function ResponseDetailPanel({ selectedMessage }) {
 
   if (!selectedMessage || !selectedMessage.response) {
     return (
-      <aside className="w-full h-full glass-panel border-l border-gray-800 flex flex-col items-center justify-center p-6 text-center text-gray-400">
-        <Layers className="w-8 h-8 text-indigo-400 opacity-50 mb-2" />
-        <h3 className="text-sm font-bold text-gray-200">Response Transparency &amp; Latency HUD</h3>
-        <p className="text-xs text-gray-400 mt-1 max-w-xs">
+      <aside className="w-full h-full glass-panel border-l border-cyan-500/20 flex flex-col items-center justify-center p-6 text-center text-gray-400 relative">
+        <PalmLeafDecoration position="bottom-left" />
+        <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-3">
+          <Layers className="w-6 h-6 text-cyan-400 opacity-60" />
+        </div>
+        <h3 className="text-sm font-extrabold text-white">Response Transparency &amp; Latency HUD</h3>
+        <p className="text-xs text-cyan-200/60 mt-1.5 max-w-xs leading-relaxed">
           Select any question in the chat history to inspect its groundedness score, stage latencies, retrieved chunks, and TTS audio readback.
         </p>
       </aside>
@@ -95,26 +99,28 @@ export default function ResponseDetailPanel({ selectedMessage }) {
   };
 
   return (
-    <aside className="w-full h-full glass-panel border-l border-gray-800 flex flex-col p-4 overflow-y-auto">
+    <aside className="w-full h-full glass-panel border-l border-cyan-500/20 flex flex-col p-4 overflow-y-auto relative">
+      <PalmLeafDecoration position="bottom-left" />
+
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-gray-800 mb-4">
+      <div className="flex items-center justify-between pb-3 border-b border-cyan-500/20 mb-4 relative z-10">
         <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-indigo-400" />
-          <h2 className="text-sm font-bold text-white tracking-wide">Response Detail Panel</h2>
+          <Layers className="w-5 h-5 text-cyan-400" />
+          <h2 className="text-sm font-extrabold text-white tracking-wide">Response Detail Panel</h2>
         </div>
         <div>
           {isGrounded && (
-            <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-[10px] font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-[10px] font-extrabold shadow-sm">
               Grounded
             </span>
           )}
           {isLowConf && (
-            <span className="px-2 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[10px] font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[10px] font-extrabold shadow-sm">
               Low Conf
             </span>
           )}
           {isDeclined && (
-            <span className="px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[10px] font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-rose-950/80 border border-rose-500/50 text-rose-300 text-[10px] font-extrabold shadow-sm">
               Declined
             </span>
           )}
@@ -122,79 +128,79 @@ export default function ResponseDetailPanel({ selectedMessage }) {
       </div>
 
       {/* Selected Query & Answer Summary */}
-      <div className="p-3.5 rounded-xl bg-slate-900/80 border border-gray-800 mb-4 text-xs">
-        <span className="text-[10px] font-bold text-gray-400 uppercase block mb-1">
+      <div className="p-3.5 rounded-2xl tropical-card mb-4 text-xs relative z-10">
+        <span className="text-[10px] font-extrabold text-cyan-400 uppercase block mb-1">
           Active Query ({language_detected})
         </span>
-        <h3 className="font-semibold text-white mb-2">{query}</h3>
-        <p className={`leading-relaxed text-xs p-2.5 rounded-lg border ${
-          isDeclined ? 'bg-rose-950/30 text-rose-300 border-rose-500/30 italic' : 'bg-slate-950 text-gray-200 border-gray-800'
+        <h3 className="font-bold text-white mb-2">{query}</h3>
+        <p className={`leading-relaxed text-xs p-3 rounded-xl border ${
+          isDeclined ? 'bg-rose-950/40 text-rose-200 border-rose-500/40 italic' : 'bg-ocean-950 text-gray-200 border-cyan-500/10'
         }`}>
           {answer}
         </p>
 
         {/* TTS Audio Readback Button */}
         {!isDeclined && (
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex flex-col items-start gap-1">
             <button
               onClick={handlePlayTTS}
               disabled={isPlayingTTS}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-md ${
                 isPlayingTTS
                   ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500 shadow-md'
+                  : 'bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white border-amber-400/50 shadow-rose-500/20'
               }`}
             >
-              <Volume2 className={`w-3.5 h-3.5 ${isPlayingTTS ? 'animate-bounce text-emerald-400' : 'text-white'}`} />
+              <Volume2 className={`w-4 h-4 ${isPlayingTTS ? 'animate-bounce text-emerald-400' : 'text-white'}`} />
               <span>{isPlayingTTS ? 'Playing Audio...' : 'Read Aloud (Sarvam Bulbul TTS)'}</span>
             </button>
-            {ttsStatusMsg && <span className="text-[10px] text-gray-400 italic">{ttsStatusMsg}</span>}
+            {ttsStatusMsg && <span className="text-[10px] text-cyan-300/70 italic mt-1">{ttsStatusMsg}</span>}
           </div>
         )}
       </div>
 
       {/* Groundedness & NLI Scores */}
-      <div className="grid grid-cols-2 gap-2 mb-4 text-xs font-mono">
-        <div className="p-2.5 rounded-xl bg-slate-900/60 border border-gray-800">
-          <span className="text-[10px] text-gray-400 block mb-1">Retrieval Confidence</span>
-          <strong className={confidence_score >= 0.5 ? "text-emerald-400 text-sm" : "text-amber-400 text-sm"}>
+      <div className="grid grid-cols-2 gap-2 mb-4 text-xs font-mono relative z-10">
+        <div className="p-3 rounded-2xl bg-ocean-900/80 border border-cyan-500/20">
+          <span className="text-[10px] text-cyan-300/70 block mb-1 font-sans">Retrieval Confidence</span>
+          <strong className={confidence_score >= 0.5 ? "text-amber-400 text-sm font-bold" : "text-amber-500 text-sm font-bold"}>
             {(confidence_score * 100).toFixed(0)}%
           </strong>
         </div>
-        <div className="p-2.5 rounded-xl bg-slate-900/60 border border-gray-800">
-          <span className="text-[10px] text-gray-400 block mb-1">NLI Groundedness</span>
-          <strong className={groundedness_score >= 0.5 ? "text-emerald-400 text-sm" : "text-rose-400 text-sm"}>
+        <div className="p-3 rounded-2xl bg-ocean-900/80 border border-cyan-500/20">
+          <span className="text-[10px] text-cyan-300/70 block mb-1 font-sans">NLI Groundedness</span>
+          <strong className={groundedness_score >= 0.5 ? "text-emerald-400 text-sm font-bold" : "text-rose-400 text-sm font-bold"}>
             {(groundedness_score * 100).toFixed(0)}%
           </strong>
         </div>
       </div>
 
       {/* Live Stage Latency HUD */}
-      <div className="mb-4">
+      <div className="mb-4 relative z-10">
         <LatencyHUD latency={latency} />
       </div>
 
       {/* Retrieved Passages & Multi-Strategy Chunk Inspector */}
-      <div className="flex-1">
+      <div className="flex-1 relative z-10">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
             Retrieved Chunks ({retrieved_chunks.length})
           </span>
-          <Database className="w-3.5 h-3.5 text-indigo-400" />
+          <Database className="w-3.5 h-3.5 text-cyan-400" />
         </div>
 
         <div className="space-y-2 text-xs">
           {retrieved_chunks.map((chunk, idx) => (
-            <div key={idx} className="p-3 rounded-xl bg-slate-900/80 border border-gray-800 space-y-1.5">
-              <div className="flex items-center justify-between text-[10px] pb-1 border-b border-gray-800">
-                <span className="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono font-bold">
+            <div key={idx} className="p-3 rounded-2xl bg-ocean-900/80 border border-cyan-500/20 space-y-1.5 shadow-sm">
+              <div className="flex items-center justify-between text-[10px] pb-1 border-b border-cyan-500/10">
+                <span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-mono font-bold">
                   #{idx + 1} {chunk.chunking_strategy || 'native_passage'}
                 </span>
-                <span className="text-emerald-400 font-mono">
+                <span className="text-amber-400 font-mono font-bold">
                   RRF: {chunk.rrf_score ? chunk.rrf_score.toFixed(4) : '0.0333'}
                 </span>
               </div>
-              <p className="text-gray-300 text-[11px] leading-relaxed">
+              <p className="text-gray-200 text-[11px] leading-relaxed font-sans">
                 "{chunk.text}"
               </p>
             </div>

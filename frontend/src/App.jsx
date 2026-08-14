@@ -4,8 +4,9 @@ import SourcesPanel from './components/SourcesPanel';
 import ChatPanel from './components/ChatPanel';
 import ResponseDetailPanel from './components/ResponseDetailPanel';
 import LatencyReportModal from './components/LatencyReportModal';
+import TropicalMeshBackground from './components/decorative/TropicalMeshBackground';
 import { ResilientAudioRecorder } from './utils/audioRecorder';
-import { Database, MessageSquare, Layers, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, Compass, Flame } from 'lucide-react';
 
 const SAMPLE_DEMO_QUERIES = [
   { text: "भारत की राजधानी क्या है और इसकी जनसंख्या कितनी है?", lang: "hi", label: "Hindi" },
@@ -150,13 +151,16 @@ export default function App() {
   const selectedMessage = messages.find((m) => m.id === selectedMessageId) || messages[messages.length - 1];
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-950 text-gray-100 overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-ocean-950 text-gray-100 overflow-hidden relative">
+      {/* HH Goa Ambient Mesh Background */}
+      <TropicalMeshBackground />
+
       {/* Top Navbar */}
       <Navbar onOpenLatencyReport={() => setShowReportModal(true)} />
 
       {/* Deployment Config Check Warning Bar if needed */}
       {configCheck && !configCheck.sarvam_configured && (
-        <div className="bg-amber-950/80 border-b border-amber-500/40 px-4 py-1.5 flex items-center justify-between text-xs text-amber-200">
+        <div className="bg-amber-950/80 border-b border-amber-500/40 px-4 py-1.5 flex items-center justify-between text-xs text-amber-200 z-20">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-amber-400" />
             <span>SARVAM_API_KEY environment variable not set. Realtime STT is running in simulated demo mode.</span>
@@ -165,24 +169,24 @@ export default function App() {
       )}
 
       {/* Preset Demo Query Bar */}
-      <div className="bg-slate-900/60 border-b border-gray-800 px-4 py-2 flex items-center gap-2 overflow-x-auto text-xs">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 whitespace-nowrap">
+      <div className="bg-ocean-900/60 border-b border-cyan-500/10 px-4 py-2 flex items-center gap-2 overflow-x-auto text-xs z-20">
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 whitespace-nowrap">
           Quick Queries:
         </span>
         {SAMPLE_DEMO_QUERIES.map((demo, idx) => (
           <button
             key={idx}
             onClick={() => handleSendQuery(demo.text)}
-            className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-indigo-950/60 border border-gray-800 text-gray-300 hover:text-indigo-200 text-[11px] whitespace-nowrap cursor-pointer transition-all"
+            className="px-3 py-1.5 rounded-xl bg-ocean-950 hover:bg-cyan-950/60 border border-cyan-500/20 hover:border-cyan-400 text-gray-200 text-[11px] whitespace-nowrap cursor-pointer transition-all shadow-sm"
           >
-            <span className="text-indigo-400 font-bold mr-1">[{demo.label}]</span>
+            <span className="text-cyan-400 font-bold mr-1">[{demo.label}]</span>
             {demo.text}
           </button>
         ))}
       </div>
 
       {/* Main NotebookLM Three-Pane Grid Container */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative z-20">
         {/* Left Pane: Sources & Corpus */}
         <div className={`h-full w-72 shrink-0 md:block ${showLeftDrawer ? 'block absolute inset-y-0 left-0 z-40 w-72' : 'hidden'}`}>
           <SourcesPanel
