@@ -7,24 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        goa: {
-          teal: '#1D9E75',
-          'teal-chip': '#E1F5EE',
-          'teal-dark': '#04342C',
+        hh: {
+          emerald: '#00E676',
+          'emerald-chip': '#E0F2F1',
+          'emerald-dark': '#004D40',
 
-          coral: '#993C1D',
-          'coral-chip': '#F5C4B3',
-          'coral-dark': '#712B13',
+          coral: '#FF3D00',
+          'coral-chip': '#FFEBEE',
+          'coral-dark': '#880E4F',
 
-          amber: '#EF9F27',
-          'amber-chip': '#FAEEDA',
-          'amber-dark': '#633806',
+          gold: '#FFD600',
+          'gold-chip': '#FFFDE7',
+          'gold-dark': '#5D4037',
         },
         slate: {
-          950: '#0a0f16',
-          900: '#111722',
-          800: '#1a2232',
-          700: '#263248',
+          950: '#080c14',
+          900: '#0f172a',
+          800: '#1e293b',
+          700: '#334155',
         }
       },
       animation: {

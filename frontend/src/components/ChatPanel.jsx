@@ -30,12 +30,12 @@ export default function ChatPanel({
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
         <div className="flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-goa-teal" />
+          <MessageSquare className="w-5 h-5 text-hh-emerald" />
           <h2 className="text-sm font-extrabold text-white tracking-wide">Interactive Voice &amp; Chat Session</h2>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold text-gray-400">
-            Messages: <strong className="text-goa-amber font-mono">{messages.length}</strong>
+            Messages: <strong className="text-hh-gold font-mono">{messages.length}</strong>
           </span>
         </div>
       </div>
@@ -44,7 +44,7 @@ export default function ChatPanel({
       <div className="flex-1 overflow-y-auto space-y-4 pr-1 mb-4">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-gray-400">
-            <div className="w-14 h-14 rounded-2xl bg-goa-teal text-white flex items-center justify-center mb-3 shadow-md">
+            <div className="w-14 h-14 rounded-2xl bg-hh-emerald text-slate-950 flex items-center justify-center mb-3 shadow-md">
               <Sparkles className="w-7 h-7" />
             </div>
             <h3 className="text-lg font-extrabold text-white mb-1">
@@ -67,14 +67,14 @@ export default function ChatPanel({
                 onClick={() => onSelectMessage(msg.id)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-slate-900 border-goa-teal shadow-lg ring-1 ring-goa-teal'
+                    ? 'bg-slate-900 border-hh-emerald shadow-lg ring-1 ring-hh-emerald'
                     : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
                 }`}
               >
                 {/* 1. Question Bubble */}
                 <div className="flex items-start justify-between gap-3 mb-2 pb-2 border-b border-slate-800">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 text-[10px] uppercase font-extrabold bg-goa-amber-chip text-goa-amber-dark rounded border border-goa-amber">
+                    <span className="px-2 py-0.5 text-[10px] uppercase font-extrabold badge-gold rounded">
                       Question ({msg.response?.language_detected || 'hi'})
                     </span>
                     <h3 className="text-sm font-bold text-white">{msg.query}</h3>
@@ -88,7 +88,7 @@ export default function ChatPanel({
                   </span>
                   <p className={`text-xs leading-relaxed font-medium p-3 rounded-xl border ${
                     isDeclined
-                      ? 'bg-goa-coral-chip text-goa-coral-dark border-goa-coral italic'
+                      ? 'badge-declined italic'
                       : 'bg-slate-950 text-gray-100 border-slate-800'
                   }`}>
                     {msg.response?.answer || "Synthesizing answer..."}
@@ -100,24 +100,24 @@ export default function ChatPanel({
                   <div className="flex items-center gap-2">
                     {isGrounded && (
                       <span className="px-2.5 py-0.5 rounded-full badge-grounded text-[10px] flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-goa-teal-dark" /> Grounded
+                        <ShieldCheck className="w-3.5 h-3.5 text-hh-emerald-dark" /> Grounded
                       </span>
                     )}
                     {isLowConf && (
-                      <span className="px-2.5 py-0.5 rounded-full badge-amber text-[10px] flex items-center gap-1">
-                        <AlertTriangle className="w-3.5 h-3.5 text-goa-amber-dark" /> Low Conf
+                      <span className="px-2.5 py-0.5 rounded-full badge-gold text-[10px] flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5 text-hh-gold-dark" /> Low Conf
                       </span>
                     )}
                     {isDeclined && (
                       <span className="px-2.5 py-0.5 rounded-full badge-declined text-[10px] flex items-center gap-1">
-                        <ShieldAlert className="w-3.5 h-3.5 text-goa-coral-dark" /> Declined (NLI Guardrail)
+                        <ShieldAlert className="w-3.5 h-3.5 text-hh-coral-dark" /> Declined (NLI Guardrail)
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2 font-mono text-[10px] text-gray-400">
                     <span>Total: <strong className="text-white font-bold">{msg.response?.latency?.total_ms?.toFixed(1)}ms</strong></span>
-                    {isSelected && <span className="px-2 py-0.5 rounded bg-goa-teal text-white font-bold text-[9px] uppercase">Selected</span>}
+                    {isSelected && <span className="px-2 py-0.5 rounded bg-hh-emerald text-slate-950 font-bold text-[9px] uppercase">Selected</span>}
                   </div>
                 </div>
               </div>
@@ -136,16 +136,16 @@ export default function ChatPanel({
 
       {/* Mic Recording Status Banner */}
       {isRecording && (
-        <div className="flex items-center justify-between p-3 mb-3 bg-goa-coral-chip rounded-2xl border border-goa-coral text-xs">
+        <div className="flex items-center justify-between p-3 mb-3 badge-declined rounded-2xl text-xs">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-goa-coral animate-ping"></span>
-            <span className="text-goa-coral-dark font-extrabold">
+            <span className="w-2.5 h-2.5 rounded-full bg-hh-coral animate-ping"></span>
+            <span className="text-hh-coral-dark font-extrabold">
               {micStatus === 'reconnecting' ? 'Reconnecting to Sarvam STT WebSocket...' : 'Listening via Sarvam Saaras v3...'}
             </span>
           </div>
           <button
             onClick={onStopVoice}
-            className="px-3 py-1 rounded-xl bg-goa-coral text-white text-[11px] font-extrabold cursor-pointer"
+            className="px-3 py-1 rounded-xl bg-hh-coral text-white text-[11px] font-extrabold cursor-pointer"
           >
             Stop
           </button>
@@ -159,8 +159,8 @@ export default function ChatPanel({
           onClick={isRecording ? onStopVoice : onStartVoice}
           className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all cursor-pointer shadow-md ${
             isRecording
-              ? 'bg-goa-coral text-white animate-pulse'
-              : 'bg-goa-coral text-white hover:opacity-90'
+              ? 'bg-hh-coral text-white animate-pulse'
+              : 'bg-hh-coral text-white hover:opacity-90'
           }`}
           title={isRecording ? 'Stop Mic' : 'Start Mic Recording (Sarvam Saaras v3)'}
         >
@@ -173,13 +173,13 @@ export default function ChatPanel({
           onChange={(e) => setTextQuery(e.target.value)}
           placeholder={isRecording ? "Listening via Sarvam AI STT..." : "Ask a question in Hindi, Bengali, Tamil, Telugu..."}
           disabled={isRecording || isLoading}
-          className="flex-1 bg-slate-950 text-gray-100 placeholder-gray-500 text-xs rounded-2xl px-4 py-3.5 border border-slate-800 focus:outline-none focus:border-goa-teal transition-all"
+          className="flex-1 bg-slate-950 text-gray-100 placeholder-gray-500 text-xs rounded-2xl px-4 py-3.5 border border-slate-800 focus:outline-none focus:border-hh-emerald transition-all"
         />
 
         <button
           type="submit"
           disabled={!textQuery.trim() || isLoading || isRecording}
-          className="flex items-center gap-1.5 px-5 py-3.5 bg-goa-coral hover:opacity-90 text-white text-xs font-extrabold rounded-2xl shadow-md disabled:opacity-40 cursor-pointer"
+          className="flex items-center gap-1.5 px-5 py-3.5 bg-hh-coral hover:opacity-90 text-white text-xs font-extrabold rounded-2xl shadow-md disabled:opacity-40 cursor-pointer"
         >
           <Send className="w-4 h-4" />
           <span>Ask</span>

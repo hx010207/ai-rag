@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
-import { Layers, ShieldCheck, AlertTriangle, ShieldAlert, Volume2, Database, Zap } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Layers, ShieldCheck, AlertTriangle, ShieldAlert, Volume2, Database } from 'lucide-react';
 import LatencyHUD from './LatencyHUD';
 
 export default function ResponseDetailPanel({ selectedMessage }) {
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
   const [ttsStatusMsg, setTtsStatusMsg] = useState('');
 
+  // Memory & Active Audio Instance References
+  const activeAudioRef = useRef(null);
+  const activeObjectUrlRef = useRef(null);
+
+  // Clean up Object URL and active audio on component unmount
+  useEffect(() => {
+    return () => {
+      stopAndCleanupAudio();
+    };
+  }, []);
+
+  const stopAndCleanupAudio = () => {
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+    }
+    if (activeObjectUrlRef.current) {
+      URL.revokeObjectURL(activeObjectUrlRef.current);
+      activeObjectUrlRef.current = null;
+    }
+    setIsPlayingTTS(false);
+  };
+
   if (!selectedMessage || !selectedMessage.response) {
     return (
       <aside className="w-full h-full glass-panel border-l border-slate-800 flex flex-col items-center justify-center p-6 text-center text-gray-400">
-        <div className="w-12 h-12 rounded-2xl bg-goa-teal text-white flex items-center justify-center mb-3">
+        <div className="w-12 h-12 rounded-2xl bg-hh-emerald text-slate-950 font-black flex items-center justify-center mb-3">
           <Layers className="w-6 h-6" />
         </div>
         <h3 className="text-sm font-extrabold text-white">Response Detail &amp; Transparency</h3>
@@ -37,9 +60,21 @@ export default function ResponseDetailPanel({ selectedMessage }) {
   const isLowConf = status_badge === 'LOW_CONFIDENCE';
   const isGrounded = status_badge === 'GROUNDED';
 
-  // Sarvam Bulbul TTS Playback Handler with Diagnostic Logging & Non-blocking Fallback
+  // Map language to Sarvam BCP-47 tag
+  const BCP47_MAP = {
+    hi: 'hi-IN', bn: 'bn-IN', ta: 'ta-IN', te: 'te-IN',
+    mr: 'mr-IN', gu: 'gu-IN', kn: 'kn-IN', ml: 'ml-IN',
+    pa: 'pa-IN', od: 'od-IN', ur: 'ur-IN', en: 'en-IN'
+  };
+  const targetBcp47 = BCP47_MAP[language_detected] || 'hi-IN';
+
+  // Sarvam Bulbul TTS Playback Handler with Double-Click Guard & Object URL Memory Cleanup
   const handlePlayTTS = async () => {
-    console.log('[TTS] Read Aloud clicked for message:', selectedMessage.id, 'Query:', query);
+    console.log('[TTS] Read Aloud clicked for message:', selectedMessage.id, 'Lang:', targetBcp47);
+    
+    // Double click / active track guard: stop any existing audio stream cleanly
+    stopAndCleanupAudio();
+
     setIsPlayingTTS(true);
     setTtsStatusMsg('Synthesizing Sarvam Bulbul TTS Audio...');
 
@@ -54,30 +89,41 @@ export default function ResponseDetailPanel({ selectedMessage }) {
         })
       });
 
-      console.log('[TTS] Response status code:', res.status);
-
       if (res.ok) {
         const data = await res.json();
-        console.log('[TTS] Response payload status:', data.status);
-
         if (data.status === 'success' && data.audio_base64) {
-          const audio = new Audio(`data:audio/wav;base64,${data.audio_base64}`);
+          // Decode Base64 string into binary Uint8Array WAV Blob
+          const binaryStr = atob(data.audio_base64);
+          const bytes = new Uint8Array(binaryStr.length);
+          for (let i = 0; i < binaryStr.length; i++) {
+            bytes[i] = binaryStr.charCodeAt(i);
+          }
+          const blob = new Blob([bytes.buffer], { type: 'audio/wav' });
+          const blobUrl = URL.createObjectURL(blob);
+          activeObjectUrlRef.current = blobUrl;
+
+          const audio = new Audio(blobUrl);
+          activeAudioRef.current = audio;
+
           audio.onended = () => {
-            console.log('[TTS] Audio playback finished naturally.');
-            setIsPlayingTTS(false);
+            console.log('[TTS] Audio playback completed. Revoking Object URL...');
+            stopAndCleanupAudio();
             setTtsStatusMsg('');
           };
+
           audio.onerror = (e) => {
             console.error('[TTS Audio Object Error]', e);
+            stopAndCleanupAudio();
             fallbackBrowserTTS();
           };
 
           audio.play().catch((playErr) => {
             console.error('[TTS Audio .play() Promise Error]:', playErr);
+            stopAndCleanupAudio();
             fallbackBrowserTTS();
           });
 
-          setTtsStatusMsg('Playing Sarvam Bulbul TTS Audio...');
+          setTtsStatusMsg(`Playing Sarvam Bulbul TTS (${targetBcp47})...`);
           return;
         }
       }
@@ -94,6 +140,7 @@ export default function ResponseDetailPanel({ selectedMessage }) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(answer);
+      utterance.lang = targetBcp47;
       utterance.rate = 1.0;
       utterance.onend = () => {
         setIsPlayingTTS(false);
@@ -118,7 +165,7 @@ export default function ResponseDetailPanel({ selectedMessage }) {
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
         <div className="flex items-center gap-2">
-          <Layers className="w-5 h-5 text-goa-teal" />
+          <Layers className="w-5 h-5 text-hh-emerald" />
           <h2 className="text-sm font-extrabold text-white tracking-wide">Response Detail Panel</h2>
         </div>
         <div>
@@ -128,7 +175,7 @@ export default function ResponseDetailPanel({ selectedMessage }) {
             </span>
           )}
           {isLowConf && (
-            <span className="px-2.5 py-0.5 rounded-full badge-amber text-[10px]">
+            <span className="px-2.5 py-0.5 rounded-full badge-gold text-[10px]">
               Low Conf
             </span>
           )}
@@ -152,20 +199,19 @@ export default function ResponseDetailPanel({ selectedMessage }) {
           {answer}
         </p>
 
-        {/* Read Aloud Button (Click Triggered — Coral #993C1D) */}
+        {/* Read Aloud Button (Click Triggered — Coral #FF3D00) */}
         {!isDeclined && (
           <div className="mt-3 flex flex-col items-start gap-1">
             <button
               onClick={handlePlayTTS}
-              disabled={isPlayingTTS}
               className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border text-xs font-extrabold transition-all cursor-pointer shadow-md ${
                 isPlayingTTS
-                  ? 'bg-goa-teal text-white border-goa-teal'
-                  : 'bg-goa-coral hover:opacity-90 text-white border-goa-coral'
+                  ? 'bg-hh-emerald text-slate-950 border-hh-emerald font-black'
+                  : 'bg-hh-coral hover:opacity-90 text-white border-hh-coral'
               }`}
             >
-              <Volume2 className={`w-4 h-4 ${isPlayingTTS ? 'animate-bounce text-white' : 'text-white'}`} />
-              <span>{isPlayingTTS ? 'Playing Audio...' : 'Read Aloud (Sarvam Bulbul TTS)'}</span>
+              <Volume2 className={`w-4 h-4 ${isPlayingTTS ? 'animate-bounce text-slate-950' : 'text-white'}`} />
+              <span>{isPlayingTTS ? 'Playing Audio (Click to Stop)...' : 'Read Aloud (Sarvam Bulbul TTS)'}</span>
             </button>
             {ttsStatusMsg && <span className="text-[10px] text-gray-400 italic mt-1">{ttsStatusMsg}</span>}
           </div>
@@ -176,13 +222,13 @@ export default function ResponseDetailPanel({ selectedMessage }) {
       <div className="grid grid-cols-2 gap-2 mb-4 text-xs font-mono">
         <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
           <span className="text-[10px] text-gray-400 block mb-1 font-sans">Retrieval Confidence</span>
-          <strong className="text-goa-amber text-sm font-bold">
+          <strong className="text-hh-gold text-sm font-bold">
             {(confidence_score * 100).toFixed(0)}%
           </strong>
         </div>
         <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800">
           <span className="text-[10px] text-gray-400 block mb-1 font-sans">NLI Groundedness</span>
-          <strong className={groundedness_score >= 0.5 ? "text-goa-teal text-sm font-bold" : "text-goa-coral text-sm font-bold"}>
+          <strong className={groundedness_score >= 0.5 ? "text-hh-emerald text-sm font-bold" : "text-hh-coral text-sm font-bold"}>
             {(groundedness_score * 100).toFixed(0)}%
           </strong>
         </div>
@@ -196,10 +242,10 @@ export default function ResponseDetailPanel({ selectedMessage }) {
       {/* Retrieved Passages & Multi-Strategy Chunk Inspector */}
       <div className="flex-1">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-goa-amber">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-hh-gold">
             Retrieved Chunks ({retrieved_chunks.length})
           </span>
-          <Database className="w-3.5 h-3.5 text-goa-teal" />
+          <Database className="w-3.5 h-3.5 text-hh-emerald" />
         </div>
 
         <div className="space-y-2 text-xs">
@@ -209,7 +255,7 @@ export default function ResponseDetailPanel({ selectedMessage }) {
                 <span className="px-2 py-0.5 rounded badge-grounded font-mono text-[9px]">
                   #{idx + 1} {chunk.chunking_strategy || 'native_passage'}
                 </span>
-                <span className="text-goa-amber font-mono font-bold">
+                <span className="text-hh-gold font-mono font-bold">
                   RRF: {chunk.rrf_score ? chunk.rrf_score.toFixed(4) : '0.0333'}
                 </span>
               </div>

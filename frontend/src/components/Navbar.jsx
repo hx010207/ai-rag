@@ -7,14 +7,14 @@ export default function Navbar({ onOpenLatencyReport }) {
       <div className="flex items-center justify-between">
         {/* Brand & Logo Badge */}
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-goa-teal text-white font-bold shadow-md">
-            <Mic className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-goa-coral rounded-full border-2 border-slate-950"></span>
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-hh-emerald text-slate-950 font-black shadow-md">
+            <Mic className="w-5 h-5 text-slate-950" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-hh-coral rounded-full border-2 border-slate-950"></span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold tracking-tight text-white">VANI RAG</h1>
-              <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full bg-goa-amber-chip text-goa-amber-dark border border-goa-amber uppercase tracking-wider">
+              <h1 className="text-xl font-black tracking-tight text-white">VANI RAG</h1>
+              <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-full badge-gold uppercase tracking-wider">
                 HH GOA 2026
               </span>
             </div>
@@ -24,14 +24,14 @@ export default function Navbar({ onOpenLatencyReport }) {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-goa-teal-chip text-goa-teal-dark border border-goa-teal text-xs font-bold">
-            <Zap className="w-3.5 h-3.5 text-goa-teal-dark" />
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full badge-grounded text-xs font-bold">
+            <Zap className="w-3.5 h-3.5 text-hh-emerald-dark" />
             <span>Target: <strong>126.49ms P50</strong></span>
           </div>
 
           <button
             onClick={onOpenLatencyReport}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-goa-coral text-white text-xs font-bold hover:opacity-90 transition-all cursor-pointer shadow-md"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-hh-coral text-white text-xs font-extrabold hover:opacity-90 transition-all cursor-pointer shadow-md"
           >
             <Activity className="w-4 h-4" />
             <span>Latency Report</span>
@@ -51,10 +51,10 @@ export default function Navbar({ onOpenLatencyReport }) {
         </div>
       </div>
 
-      {/* Coastline Wave Line Divider (Flat Teal Stroke, No Fill) */}
-      <div className="absolute bottom-0 left-0 right-0 h-[6px] overflow-hidden leading-none pointer-events-none opacity-60">
+      {/* Coastline Wave Line Divider (Flat HH Emerald Stroke #00E676, No Fill) */}
+      <div className="absolute bottom-0 left-0 right-0 h-[6px] overflow-hidden leading-none pointer-events-none opacity-80">
         <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
-          <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,-20 1200,30" fill="none" stroke="#1D9E75" strokeWidth="3" />
+          <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,-20 1200,30" fill="none" stroke="#00E676" strokeWidth="3" />
         </svg>
       </div>
     </header>

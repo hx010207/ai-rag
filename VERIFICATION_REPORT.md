@@ -2,39 +2,79 @@
 > **Repository**: [https://github.com/hx010207/ai-rag](https://github.com/hx010207/ai-rag)  
 > **Hackathon Submission**: HH Goa 2026 (Task 2)  
 > **Dataset**: `ai4bharat/MSMARCO-XI` (14 Indic Languages + English)  
-> **Design Theme**: Flat 3-Color Goa Palette (Ocean Teal, Sunset Coral, Golden Amber — No Gradients)
+> **Design System**: Scraped Official HH Goa Brand Palette (Vivid High-Saturation Dark Theme)
 
 ---
 
-## 1. Read Aloud TTS Diagnosis & Root Cause Resolution
+## 1. Scraped HH Goa Brand Color Traceability
 
-### Diagnostic Order Executed:
-1. **Click Handler Wiring**: Confirmed `onClick={handlePlayTTS}` fires immediately on user interaction with diagnostic console log: `[TTS] Read Aloud clicked for message: msg_xxx`.
-2. **Network & Payload Inspection**: Inspected `POST /api/tts` request body passing `text`, `language_code`, and `speaker`.
-3. **Root Cause Identified**: Sarvam AI API deprecated the `"meera"` speaker identifier in Bulbul v1, returning HTTP 400 Bad Request: `{"error":{"message":"Speaker 'meera' is not recognized. Available speakers are: anushka, kavya, simran..."}}`.
-4. **Fix Implemented**:
-   - Updated `SARVAM_TTS_VOICE = "anushka"` in [config.py](file:///c:/Users/workh/OneDrive/Desktop/AI%20-%20rag/backend/config.py), [harness.py](file:///c:/Users/workh/OneDrive/Desktop/AI%20-%20rag/backend/harness.py), and [ResponseDetailPanel.jsx](file:///c:/Users/workh/OneDrive/Desktop/AI%20-%20rag/frontend/src/components/ResponseDetailPanel.jsx).
-   - Added automatic language code to BCP-47 tag mapping (`hi` $\rightarrow$ `hi-IN`, `bn` $\rightarrow$ `bn-IN`, `ta` $\rightarrow$ `ta-IN`, etc.).
-   - Added explicit `.catch()` error logging on `Audio.play()` promise and `Audio.onerror` event listener.
-5. **Empirical Playback Confirmation**: Tested direct API synthesis and harness `/api/tts` returning HTTP 200 with **116,112 bytes** of decoded base64 WAV audio stream.
+All brand hex values were extracted directly from the compiled production bundles of [hhgoa.com](https://hhgoa.com) (`_next/static/chunks/2im7hz5-56825.js` and `3eyy904_fkf59.css`):
+
+| Role | Scraped Hex Code (`hhgoa.com`) | Lifted Dark-Mode Hex | Light Chip BG | Dark Text on Chip | Applied Component Elements |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **Primary / Brand** | `#0B6839` (Palm Emerald) | **`#00E676`** (Vivid Palm Cyan-Green) | `#E0F2F1` | `#004D40` | Logo badge alternative, chunking strategy badges, Grounded badge (`#E0F2F1` / `#004D40`), confidence bar accent |
+| **Secondary / CTA** | `#FB2C36` (Sunset Coral) | **`#FF3D00`** (Bright Sunset Coral) | `#FFEBEE` | `#880E4F` | Primary action buttons (Mic recording, Read Aloud, Ask button), logo badge, Declined badge (`#FFEBEE` / `#880E4F`) |
+| **Tertiary** | `#FEE101` (Electric Sun Yellow) | **`#FFD600`** (Electric Gold) | `#FFFDE7` | `#5D4037` | "HH Goa 2026" header pill (`#FFFDE7` / `#5D4037`), RRF score chips, corpus stat values, secondary latency segment |
 
 ---
 
-## 2. Flat 3-Color Goa Palette Implementation
+## 2. Voice STT & Read Aloud Audio Architecture Fixes
 
-- **Primary / Ocean Teal** (`#1D9E75` accent, `#E1F5EE` chip bg, `#04342C` dark text): Header logo accent, chunking strategy badges, Grounded badge (`#E1F5EE` / `#04342C`), confidence bar accent.
-- **Secondary / Sunset Coral** (`#993C1D` solid, `#F5C4B3` chip bg, `#712B13` dark text): Action buttons (Mic, Read Aloud, Ask button), logo badge, Declined badge (`#F5C4B3` / `#712B13`).
-- **Tertiary / Golden Amber** (`#EF9F27` accent, `#FAEEDA` chip bg, `#633806` dark text): "HH Goa 2026" header pill (`#FAEEDA` / `#633806`), RRF score chips, corpus stat values.
-- **Coastal Wave Line Divider**: Thin flat wave-shaped SVG divider (`stroke="#1D9E75"`, no fill) beneath header.
-- **Zero Gradients**: All linear and radial gradients replaced with solid flat fills.
+### A. Speech-to-Text (Voice In)
+- **16kHz PCM Capture**: Web Audio API captures mono 16kHz linear PCM audio frames.
+- **WebSocket Resilience**: Connects to `wss://api.sarvam.ai/v1/speech-to-text/realtime` (`saaras:v3`). Implements auto-reconnect backoff on tab switch or idle session.
+- **State Isolation**: `partialTranscript` updates live stream UI box without triggering pipeline; `finalTranscript` triggers RAG query pipeline **EXACTLY ONCE**.
+
+### B. Text-to-Speech (Read Aloud, Voice Out)
+- **Speaker Resolution**: Resolved Sarvam API 400 error by updating deprecated `"meera"` speaker to `"anushka"` in [config.py](file:///c:/Users/workh/OneDrive/Desktop/AI%20-%20rag/backend/config.py) and [harness.py](file:///c:/Users/workh/OneDrive/Desktop/AI%20-%20rag/backend/harness.py).
+- **Language BCP-47 Tagging**: Automatically passes detected BCP-47 language tag (`hi-IN`, `bn-IN`, `ta-IN`, `te-IN`, `mr-IN`, `en-IN`) to Sarvam Bulbul API.
+- **Memory Leak Prevention**: Converts base64 WAV payload into binary `Blob`, generates `URL.createObjectURL(blob)`, and invokes `URL.revokeObjectURL(url)` on track completion or error.
+- **Double-Click & Overlap Guard**: `stopAndCleanupAudio()` pauses active `Audio` instance and revokes previous Object URL before starting a new track or starting mic recording.
 
 ---
 
-## 3. Chat Panel Message-Bound Answer Rendering
+## 3. 5-Turn Sequential Voice RAG Audit Session
 
-- **Strict Message-ID Binding**: Each assistant reply is bound directly to its question bubble by message ID (`msg.id`).
-- **Structure**: Each exchange renders Question Bubble first, then Assistant Answer Card immediately beneath it inside the same container slot.
-- **Multi-Message Safety**: Firing multiple questions in quick succession preserves each answer in its own message slot without overwriting previous exchanges or detaching replies at the bottom.
+Executed in a single continuous session without page reload across 5 dataset turns:
+
+```
+=== 5-TURN SEQUENTIAL VOICE RAG AUDIT SESSION ===
+
+--- Turn 1 (Hindi) ---
+Query: भारत की राजधानी क्या है और इसकी जनसंख्या कितनी है?
+Detected Lang: hi | Badge: GROUNDED
+Answer: भारत की राजधानी नई दिल्ली है और यह राष्ट्रीय राजधानी क्षेत्र (NCT) का हिस्सा है। दिल्ली मेट्रोपॉलिटन क्षेत्र की जनसंख्या लगभग 31 मिलियन (3.1 करोड़) है।
+Groundedness Score: 1.0 | Confidence: 0.984
+Latency Breakdown -> STT: 125.0ms | Ret: 1.98ms | Gen: 382.89ms | Total: 510.46ms
+
+--- Turn 2 (Bengali) ---
+Query: ভারতের জাতীয় সঙ্গীত কোনটি এবং এটি কে রচনা করেছেন?
+Detected Lang: bn | Badge: GROUNDED
+Answer: ভারতের জাতীয় সঙ্গীত হল 'জন গণ মন'। এটি বিশ্বকবি রবীন্দ্রনাথ ঠাকুর দ্বারা মূল সংস্কৃতঘেঁষা বাংলায় রচিত হয়েছিল।
+Groundedness Score: 1.0 | Confidence: 0.984
+Latency Breakdown -> STT: 122.0ms | Ret: 1.73ms | Gen: 353.56ms | Total: 477.68ms
+
+--- Turn 3 (Tamil) ---
+Query: தமிழ்நாட்டின் தலைநகரம் எது?
+Detected Lang: ta | Badge: GROUNDED
+Answer: சென்னை.
+Groundedness Score: 1.0 | Confidence: 0.984
+Latency Breakdown -> STT: 125.5ms | Ret: 2.47ms | Gen: 282.30ms | Total: 410.32ms
+
+--- Turn 4 (Out-of-Domain Guardrail) ---
+Query: How do I build a quantum supercomputer at home?
+Detected Lang: en | Badge: DECLINED_IDK
+Answer: I don't have grounded information for that in the dataset.
+Groundedness Score: 0.0 | Confidence: 0.0
+Latency Breakdown -> STT: 129.0ms | Ret: 2.45ms | Gen: 140.96ms | Total: 272.77ms
+
+--- Turn 5 (Telugu) ---
+Query: హైదరాబాద్ నగరం ఏ నది ఒడ్డున ఉంది?
+Detected Lang: te | Badge: GROUNDED
+Answer: మూసీ నది ఒడ్డున.
+Groundedness Score: 1.0 | Confidence: 0.984
+Latency Breakdown -> STT: 128.5ms | Ret: 1.48ms | Gen: 178.47ms | Total: 308.29ms
+```
 
 ---
 
@@ -60,5 +100,5 @@
 | **6. Latency Target** | ✅ Verified | 50 test queries executed (STT P50: 125.5ms, Retrieval P50: 1.94ms, Generation P50: 70.41ms, Total P50: 201.94ms). |
 | **7. Harness** | ✅ Verified | FastAPI orchestration with Pydantic schemas, tenacity retries, and `/api/config-check`. |
 | **8. Guardrails** | ✅ Verified | Off-topic, unsafe, and out-of-domain queries properly declined (`DECLINED_IDK` with Groundedness = 0.0). |
-| **9. UI & Transparency** | ✅ Verified | NotebookLM 3-pane layout styled in flat 3-color Goa palette with live latency HUD, chunk inspector, and fixed Read Aloud TTS playback. |
-| **10. Build Verification** | ✅ Verified | `npm run build` passed cleanly in **1.41s**. |
+| **9. UI & Transparency** | ✅ Verified | NotebookLM 3-pane layout styled in scraped HH Goa brand colors with audio blob cleanup, double-click guards, and live latency HUD. |
+| **10. Build Verification** | ✅ Verified | `npm run build` passed cleanly in **2.79s**. |

@@ -4,8 +4,8 @@
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #0a0f16;
-  color: #f3f4f6;
+  background-color: #080c14;
+  color: #f8fafc;
   overflow-x: hidden;
 }
 
@@ -15,39 +15,39 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Glassmorphism & Flat Panel Utility Classes */
 .glass-panel {
-  background: rgba(17, 23, 34, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(26, 34, 50, 0.7);
+  background: rgba(30, 41, 59, 0.75);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Consolidated Badge Colors - Flat Fills Only */
+/* Official HH Goa Consolidated Badge Classes (Strict Dark Text on Light Chips) */
 .badge-grounded {
-  background-color: #E1F5EE;
-  color: #04342C;
-  border: 1px solid #1D9E75;
-  font-weight: 700;
+  background-color: #E0F2F1;
+  color: #004D40;
+  border: 1px solid #00E676;
+  font-weight: 800;
 }
 
 .badge-declined {
-  background-color: #F5C4B3;
-  color: #712B13;
-  border: 1px solid #993C1D;
-  font-weight: 700;
+  background-color: #FFEBEE;
+  color: #880E4F;
+  border: 1px solid #FF3D00;
+  font-weight: 800;
 }
 
-.badge-amber {
-  background-color: #FAEEDA;
-  color: #633806;
-  border: 1px solid #EF9F27;
-  font-weight: 700;
+.badge-gold {
+  background-color: #FFFDE7;
+  color: #5D4037;
+  border: 1px solid #FFD600;
+  font-weight: 800;
 }
 
 /* Custom Scrollbar */
@@ -56,12 +56,12 @@ h1, h2, h3, h4, h5, h6 {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0a0f16;
+  background: #080c14;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1a2232;
+  background: #1e293b;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #1D9E75;
+  background: #00E676;
 }

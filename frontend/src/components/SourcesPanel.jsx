@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, Globe, Layers } from 'lucide-react';
+import { Database, Globe } from 'lucide-react';
 
 const INDIC_DATASET_SUBSETS = [
   { code: 'hi', name: 'Hindi (हिंदी)', passages: '1,240' },
@@ -24,7 +24,7 @@ export default function SourcesPanel({ selectedLanguage, setSelectedLanguage }) 
     <aside className="w-full h-full glass-panel border-r border-slate-800 flex flex-col p-4 overflow-y-auto relative">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-800">
-        <div className="p-2 rounded-xl bg-goa-teal text-white font-bold">
+        <div className="p-2 rounded-xl bg-hh-emerald text-slate-950 font-extrabold">
           <Database className="w-5 h-5" />
         </div>
         <div>
@@ -37,15 +37,15 @@ export default function SourcesPanel({ selectedLanguage, setSelectedLanguage }) 
       <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 mb-4 text-xs">
         <div className="flex items-center justify-between text-gray-300 mb-1.5">
           <span>Segmented Passages:</span>
-          <strong className="text-goa-amber font-mono font-bold">15,420</strong>
+          <strong className="text-hh-gold font-mono font-extrabold">15,420</strong>
         </div>
         <div className="flex items-center justify-between text-gray-300 mb-1.5">
           <span>Qdrant HNSW Index:</span>
-          <strong className="text-goa-teal font-mono font-bold">Ready</strong>
+          <strong className="text-hh-emerald font-mono font-extrabold">Ready</strong>
         </div>
         <div className="flex items-center justify-between text-gray-300">
           <span>Indic Languages:</span>
-          <strong className="text-goa-amber font-mono font-bold">14 + EN</strong>
+          <strong className="text-hh-gold font-mono font-extrabold">14 + EN</strong>
         </div>
       </div>
 
@@ -55,17 +55,17 @@ export default function SourcesPanel({ selectedLanguage, setSelectedLanguage }) 
           Active Chunking Strategies:
         </span>
         <div className="space-y-1.5 text-[11px]">
-          <div className="flex items-center justify-between p-2 rounded-xl bg-goa-teal-chip text-goa-teal-dark border border-goa-teal">
-            <span className="font-bold">1. Native Passage Level</span>
-            <span className="font-mono text-[10px] font-bold">100%</span>
+          <div className="flex items-center justify-between p-2 rounded-xl badge-grounded">
+            <span className="font-extrabold">1. Native Passage Level</span>
+            <span className="font-mono text-[10px] font-extrabold">100%</span>
           </div>
-          <div className="flex items-center justify-between p-2 rounded-xl bg-goa-amber-chip text-goa-amber-dark border border-goa-amber">
-            <span className="font-bold">2. Sentence Window (&gt;150t)</span>
-            <span className="font-mono text-[10px] font-bold">Dynamic</span>
+          <div className="flex items-center justify-between p-2 rounded-xl badge-gold">
+            <span className="font-extrabold">2. Sentence Window (&gt;150t)</span>
+            <span className="font-mono text-[10px] font-extrabold">Dynamic</span>
           </div>
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-800 text-gray-200 border border-slate-700">
-            <span className="font-bold">3. Sliding Window Overlap</span>
-            <span className="font-mono text-[10px] font-bold">256t / 20%</span>
+            <span className="font-extrabold">3. Sliding Window Overlap</span>
+            <span className="font-mono text-[10px] font-extrabold">256t / 20%</span>
           </div>
         </div>
       </div>
@@ -73,10 +73,10 @@ export default function SourcesPanel({ selectedLanguage, setSelectedLanguage }) 
       {/* Dataset Subsets List */}
       <div className="flex-1 flex flex-col">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-goa-amber">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-hh-gold">
             Language Subsets
           </span>
-          <Globe className="w-3.5 h-3.5 text-goa-teal" />
+          <Globe className="w-3.5 h-3.5 text-hh-emerald" />
         </div>
 
         <div className="space-y-1.5 flex-1 overflow-y-auto pr-1">
@@ -88,15 +88,15 @@ export default function SourcesPanel({ selectedLanguage, setSelectedLanguage }) 
                 onClick={() => setSelectedLanguage(item.code)}
                 className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-xs transition-all text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-goa-teal text-white font-bold border-goa-teal shadow-md'
+                    ? 'bg-hh-emerald text-slate-950 font-black border-hh-emerald shadow-md'
                     : 'bg-slate-900 border-slate-800 text-gray-300 hover:bg-slate-800'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-gray-600'}`}></span>
+                  <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-slate-950' : 'bg-gray-600'}`}></span>
                   <span>{item.name}</span>
                 </div>
-                <span className={`text-[10px] font-mono ${isSelected ? 'text-white' : 'text-gray-400'}`}>{item.passages}</span>
+                <span className={`text-[10px] font-mono ${isSelected ? 'text-slate-950 font-bold' : 'text-gray-400'}`}>{item.passages}</span>
               </button>
             );
           })}
