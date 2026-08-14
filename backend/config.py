@@ -27,7 +27,7 @@ class Settings(BaseModel):
     SARVAM_STT_WS_URL: str = os.getenv("SARVAM_STT_WS_URL", "wss://api.sarvam.ai/v1/speech-to-text/realtime")
     SARVAM_STT_MODEL: str = "saaras:v3"
     SARVAM_TTS_API_URL: str = "https://api.sarvam.ai/text-to-speech"
-    SARVAM_TTS_VOICE: str = "meera"
+    SARVAM_TTS_VOICE: str = "anushka"
 
     # Qdrant Vector Store
     QDRANT_HOST: str = os.getenv("QDRANT_HOST", ":memory:")

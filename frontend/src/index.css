@@ -4,7 +4,7 @@
 body {
   margin: 0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #060913;
+  background-color: #0a0f16;
   color: #f3f4f6;
   overflow-x: hidden;
 }
@@ -13,39 +13,41 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', sans-serif;
 }
 
-/* Glassmorphism Design System Utility Classes */
+/* Glassmorphism & Flat Panel Utility Classes */
 .glass-panel {
-  background: rgba(12, 16, 29, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(17, 23, 34, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-card {
-  background: rgba(20, 26, 46, 0.65);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(26, 34, 50, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.tropical-card {
-  background: linear-gradient(135deg, rgba(20, 26, 46, 0.8) 0%, rgba(12, 16, 29, 0.9) 100%);
-  border: 1px solid rgba(6, 182, 212, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+/* Consolidated Badge Colors - Flat Fills Only */
+.badge-grounded {
+  background-color: #E1F5EE;
+  color: #04342C;
+  border: 1px solid #1D9E75;
+  font-weight: 700;
 }
 
-.hh-gradient-text {
-  background: linear-gradient(135deg, #a855f7 0%, #ec4899 40%, #f43f5e 70%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.badge-declined {
+  background-color: #F5C4B3;
+  color: #712B13;
+  border: 1px solid #993C1D;
+  font-weight: 700;
 }
 
-.tropical-glow {
-  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
-}
-
-.sunset-glow {
-  box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.35);
+.badge-amber {
+  background-color: #FAEEDA;
+  color: #633806;
+  border: 1px solid #EF9F27;
+  font-weight: 700;
 }
 
 /* Custom Scrollbar */
@@ -54,12 +56,12 @@ h1, h2, h3, h4, h5, h6 {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #060913;
+  background: #0a0f16;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e2640;
+  background: #1a2232;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #06b6d4;
+  background: #1D9E75;
 }

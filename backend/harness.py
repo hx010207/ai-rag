@@ -122,22 +122,24 @@ async def text_to_speech_endpoint(req: TTSRequest):
             "audio_url": None
         }
 
+    # Map language code to Sarvam BCP-47 tag (e.g. hi -> hi-IN)
+    lang_map = {
+        "hi": "hi-IN", "bn": "bn-IN", "ta": "ta-IN", "te": "te-IN",
+        "mr": "mr-IN", "gu": "gu-IN", "kn": "kn-IN", "ml": "ml-IN",
+        "pa": "pa-IN", "od": "od-IN", "ur": "ur-IN", "en": "en-IN"
+    }
+    target_lang = lang_map.get(req.language_code, "hi-IN")
+
     try:
         import httpx
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=8.0) as client:
             resp = await client.post(
                 settings.SARVAM_TTS_API_URL,
                 headers={"api-subscription-key": settings.SARVAM_API_KEY, "Content-Type": "application/json"},
                 json={
                     "inputs": [req.text[:500]],
-                    "target_language_code": req.language_code if req.language_code != "auto" else "hi",
-                    "speaker": req.speaker,
-                    "pitch": 0,
-                    "pace": 1.0,
-                    "loudness": 1.5,
-                    "speech_sample_rate": 16000,
-                    "enable_preprocessing": True,
-                    "model": "bulbul:v1"
+                    "target_language_code": target_lang,
+                    "speaker": req.speaker or "anushka"
                 }
             )
             if resp.status_code == 200:
@@ -149,8 +151,10 @@ async def text_to_speech_endpoint(req: TTSRequest):
                         "audio_base64": audios[0],
                         "model": "bulbul:v1"
                     }
+            else:
+                print(f"Sarvam TTS Error ({resp.status_code}): {resp.text}")
     except Exception as e:
-        print(f"Sarvam TTS Error: {e}")
+        print(f"Sarvam TTS Exception: {e}")
 
     return {
         "status": "fallback",
