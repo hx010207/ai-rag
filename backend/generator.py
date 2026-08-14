@@ -35,12 +35,14 @@ class GroundedQAGenerator:
         self,
         query: str,
         retrieved_chunks: List[Dict[str, Any]],
-        language: str = "en"
+        language: str = "en",
+        model_override: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Synthesize answer and track generation latency.
         """
         start_t = time.perf_counter()
+        target_model = model_override or settings.LLM_MODEL
 
         if not retrieved_chunks:
             elapsed_ms = (time.perf_counter() - start_t) * 1000.0
@@ -59,7 +61,7 @@ class GroundedQAGenerator:
                     resp = await client.post(
                         f"{self.local_url}/chat/completions",
                         json={
-                            "model": "qwen2.5-7b-instruct",
+                            "model": target_model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": 150,
                             "temperature": 0.1
@@ -72,20 +74,21 @@ class GroundedQAGenerator:
                         return {
                             "answer": answer_text,
                             "generation_ms": elapsed_ms,
-                            "model_used": "qwen2.5-7b-instruct-quantized"
+                            "model_used": f"local-{target_model}"
                         }
             except Exception:
                 pass
 
-        # 2. Fast Hosted Groq API (Qwen2.5 / Llama 3.1)
+        # 2. Fast Hosted Groq API (Swappable Model)
         if self.groq_api_key:
             try:
-                async with httpx.AsyncClient(timeout=3.0) as client:
+                groq_model = target_model if target_model in ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "mixtral-8x7b-32768"] else "llama-3.1-8b-instant"
+                async with httpx.AsyncClient(timeout=4.0) as client:
                     resp = await client.post(
                         "https://api.groq.com/openai/v1/chat/completions",
                         headers={"Authorization": f"Bearer {self.groq_api_key}"},
                         json={
-                            "model": "llama-3.1-8b-instant",
+                            "model": groq_model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": 150,
                             "temperature": 0.1
@@ -98,12 +101,12 @@ class GroundedQAGenerator:
                         return {
                             "answer": answer_text,
                             "generation_ms": elapsed_ms,
-                            "model_used": "groq-llama-3.1-8b"
+                            "model_used": f"groq-{groq_model}"
                         }
             except Exception:
                 pass
 
-        # 3. High-Speed Sub-50ms Local Grounded QA Synthesizer (Ideal for local hackathon sub-200ms benchmark target)
+        # 3. Fast Local Grounded QA Synthesizer Fallback
         answer_text = self._synthesize_direct_grounded_answer(query, retrieved_chunks, language)
         elapsed_ms = (time.perf_counter() - start_t) * 1000.0
         return {

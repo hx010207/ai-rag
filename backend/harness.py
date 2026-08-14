@@ -24,6 +24,103 @@ class LatencyBreakdown(BaseModel):
     guardrail_output_ms: float = 0.0
     total_ms: float = 0.0
 
+class TTSRequest(BaseModel):
+    text: str = Field(..., example="नई दिल्ली भारत की राजधानी है।")
+    language_code: str = Field("hi", example="hi")
+    speaker: str = Field("meera", example="meera")
+
+class ConfigCheckResponse(BaseModel):
+    environment: str
+    sarvam_configured: bool
+    groq_configured: bool
+    qdrant_status: str
+    llm_model: str
+    allowed_origins: list[str]
+    indexed_chunks: int
+
+# --- FastAPI App & Engine Initialization ---
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    description="Voice-Native Retrieval-Augmented Generation (RAG) System for Indic MSMARCO-XI dataset."
+)
+
+# Enable CORS for React Frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+stt_client = SarvamRealtimeSTT()
+generator = GroundedQAGenerator()
+
+@app.get("/api/config-check", response_model=ConfigCheckResponse)
+async def config_check():
+    """Environment diagnostics endpoint for deployment verification."""
+    return ConfigCheckResponse(
+        environment=settings.ENVIRONMENT,
+        sarvam_configured=bool(settings.SARVAM_API_KEY),
+        groq_configured=bool(settings.GROQ_API_KEY),
+        qdrant_status="ready" if vector_store.is_indexed else "not_indexed",
+        llm_model=settings.LLM_MODEL,
+        allowed_origins=settings.ALLOWED_ORIGINS,
+        indexed_chunks=len(vector_store.chunks)
+    )
+
+@app.post("/api/tts")
+async def text_to_speech_endpoint(req: TTSRequest):
+    """
+    Sarvam Bulbul TTS API integration with non-blocking fallback.
+    Hits https://api.sarvam.ai/text-to-speech
+    """
+    if not settings.SARVAM_API_KEY:
+        # Graceful non-blocking fallback if Sarvam key is missing
+        return {
+            "status": "fallback",
+            "message": "SARVAM_API_KEY not configured. Use browser Web Speech API for playback.",
+            "audio_url": None
+        }
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.post(
+                settings.SARVAM_TTS_API_URL,
+                headers={"api-subscription-key": settings.SARVAM_API_KEY, "Content-Type": "application/json"},
+                json={
+                    "inputs": [req.text[:500]],
+                    "target_language_code": req.language_code if req.language_code != "auto" else "hi",
+                    "speaker": req.speaker,
+                    "pitch": 0,
+                    "pace": 1.0,
+                    "loudness": 1.5,
+                    "speech_sample_rate": 16000,
+                    "enable_preprocessing": True,
+                    "model": "bulbul:v1"
+                }
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                audios = data.get("audios", [])
+                if audios:
+                    return {
+                        "status": "success",
+                        "audio_base64": audios[0],
+                        "model": "bulbul:v1"
+                    }
+    except Exception as e:
+        print(f"Sarvam TTS Error: {e}")
+
+    return {
+        "status": "fallback",
+        "message": "Sarvam TTS service unavailable. Using browser readback.",
+        "audio_url": None
+    }
+
 class QueryRequest(BaseModel):
     query: str = Field(..., example="भारत की राजधानी क्या है?")
     language: str = Field("auto", example="hi")

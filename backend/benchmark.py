@@ -121,15 +121,80 @@ async def run_latency_benchmark(num_queries: int = 50, output_json_path: str = "
         "total": calc_percentiles(total_times)
     }
 
-    report = {
-        "num_queries": num_queries,
-        "benchmark_duration_ms": round(total_bench_ms, 2),
-        "stage_percentiles": stats,
-        "queries_detail": results_detail
-    }
+async def compare_generation_models(num_queries: int = 50) -> Dict[str, Any]:
+    """
+    Evaluates candidate generation models on:
+    1. Latency (P50, P70, P100, Mean)
+    2. Groundedness NLI Pass Rate (%)
+    """
+    print("\n" + "="*75)
+    print("[EVAL] MULTI-MODEL GENERATION EVALUATION BENCHMARK (50 MSMARCO-XI Queries)")
+    print("="*75)
+    
+    passages = load_msmarco_xi_passages()
+    chunks = MultiStrategyChunker.process_all_passages(passages)
+    vector_store.index_chunks(chunks)
 
-    with open(output_json_path, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
+    from backend.generator import GroundedQAGenerator
+    from backend.guardrails import guardrail_engine
+    generator = GroundedQAGenerator()
+
+    candidate_models = [
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "quantized-local-qa-engine"
+    ]
+
+    queries = generate_50_benchmark_queries()[:num_queries]
+    comparison_summary = {}
+
+    for model_name in candidate_models:
+        print(f"\n[EVAL] Running Benchmark for Model: {model_name}...")
+        gen_latencies = []
+        tot_latencies = []
+        grounded_scores = []
+        pass_count = 0
+
+        for idx, q in enumerate(queries):
+            ret_res = vector_store.hybrid_search_rrf(query=q["query"], lang_filter=q["lang"], top_k=5)
+            ret_chunks = ret_res["chunks"]
+
+            gen_res = await generator.generate_answer(q["query"], ret_chunks, q["lang"], model_override=model_name)
+            ans = gen_res["answer"]
+            gen_ms = gen_res["generation_ms"]
+
+            conf, g_score, is_grd, _ = guardrail_engine.check_output_entailment(ans, ret_chunks)
+
+            simulated_stt_ms = 125.0
+            tot_ms = simulated_stt_ms + ret_res["retrieval_ms"] + gen_ms
+
+            gen_latencies.append(gen_ms)
+            tot_latencies.append(tot_ms)
+            grounded_scores.append(g_score)
+            if is_grd:
+                pass_count += 1
+
+        comparison_summary[model_name] = {
+            "gen_p50": round(float(np.percentile(gen_latencies, 50)), 2),
+            "gen_p70": round(float(np.percentile(gen_latencies, 70)), 2),
+            "gen_p100": round(float(np.max(gen_latencies)), 2),
+            "tot_p50": round(float(np.percentile(tot_latencies, 50)), 2),
+            "tot_p70": round(float(np.percentile(tot_latencies, 70)), 2),
+            "tot_p100": round(float(np.max(tot_latencies)), 2),
+            "avg_groundedness": round(float(np.mean(grounded_scores)) * 100, 1),
+            "pass_rate_pct": round((pass_count / num_queries) * 100, 1)
+        }
+
+    print("\n" + "="*85)
+    print("[RESULTS] MODEL COMPARISON RESULTS (2 Axes: Latency & Groundedness)")
+    print("="*85)
+    print(f"{'Model Candidate':<28} | {'Gen P50':<9} | {'Tot P50':<9} | {'Tot P100':<9} | {'Groundedness':<12} | {'Pass Rate':<10}")
+    print("-" * 85)
+    for model_name, stats in comparison_summary.items():
+        print(f"{model_name:<28} | {stats['gen_p50']:<9.1f} | {stats['tot_p50']:<9.1f} | {stats['tot_p100']:<9.1f} | {stats['avg_groundedness']:<12.1f}% | {stats['pass_rate_pct']:<10.1f}%")
+    print("="*85 + "\n")
+
+    return comparison_summary
 
     print("\n" + "="*70)
     print("[REPORT] END-TO-END LATENCY BENCHMARK REPORT (MSMARCO-XI Dataset)")
@@ -152,6 +217,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Latency Benchmark Script for Voice RAG System")
     parser.add_argument("--queries", type=int, default=50, help="Number of benchmark queries to execute")
     parser.add_argument("--output", type=str, default="latency_report.json", help="Path to save latency report JSON")
+    parser.add_argument("--compare", action="store_true", help="Run multi-model comparison benchmark")
     args = parser.parse_args()
 
-    asyncio.run(run_latency_benchmark(num_queries=args.queries, output_json_path=args.output))
+    if args.compare:
+        asyncio.run(compare_generation_models(num_queries=args.queries))
+    else:
+        asyncio.run(run_latency_benchmark(num_queries=args.queries, output_json_path=args.output))

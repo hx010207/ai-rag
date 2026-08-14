@@ -43,10 +43,14 @@ class Settings(BaseModel):
 
     # LLM Answer Generation
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "auto") # auto, local, groq, gemini, openai, mock
+    LLM_MODEL: str = os.getenv("LLM_MODEL", "llama-3.1-8b-instant") # llama-3.1-8b-instant, llama-3.3-70b-versatile, sarvam-2b-v0.5, qwen2.5-7b-instruct
     LOCAL_LLM_URL: str = os.getenv("LOCAL_LLM_URL", "http://localhost:8080/v1")
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+
+    # CORS Settings
+    ALLOWED_ORIGINS: list[str] = ["*"]
 
     # Guardrail Thresholds
     CONFIDENCE_THRESHOLD: float = 0.45
